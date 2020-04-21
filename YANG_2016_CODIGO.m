@@ -1,109 +1,127 @@
+%%%%%%%%%%%%%%%%%%% Algoritmo de Previs√£o de Yang %%%%%%%%%%%%%%%%%%%%%%%%%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% v 1.0 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%
+format long
+clear all
+clc
+%
 %%%%CONSTANTES GLOBAIS%%%
+ttotal =  9.4608*10^7; %tempo total, s
+rof = 2.71*10^3; %densidade da camada de incrusta√ß√£o, kg/m¬≥
+%xf(1) = 0; %camada de escala inicial
+C = 543; %constante de Lammers
+dcp = 75; %diferen√ßa de capacidade t√©rmica
+dHo = 869; %entalpia da solu√ß√£o
+R =  8.3145; %constante dos gases, J/(mol*K)
+E =  37143; %energia de ativa√ß√£o, J/mol
+Kro =  7.07; %constante da rea√ß√£o, m^4/(kg*s)
+N =  100; %quantidade de subintervalos em rela√ß√£o ao tempo
+h = ttotal/N; %valor do passo temporal
+t = 0:h:ttotal; %matriz dos instantes a partir do passo h
+Z = 3000; %profundidade m√°xima
+deltaZ = 30; %tamanho de cada segmento; subintervalos da profundidade
+Nz = Z/deltaZ; %n√∫mero de subintervalos em rela√ß√£o ao eixo z
+z = 0:deltaZ:Z; %discretiza√ß√£o da profundidade
+gama = 2.6*10^(-6); %coeficiente de expans√£o linear, m/K
+g = 9.81; %g √© o valor da gravidade
+d1 = 0.06;  %camadas espec√≠ficas do po√ßo (de d0 a d5, m
+d2 = 0.075;
+d3 = 0.125;
+d4 = 0.15;
+d5 = 0.35;
+a = 0.035; %gradiente geot√©rmico; tem como unidade K/m
+a1 = 3.923 * 10^(-16); %coeficientes para o c√°lculo do coeficiente de difus√£o D(T,c)
+a2 = 2.333 * 10^(-15);
+a3 = 7.153 * 10^(-12);
+a4 = 1.049 * 10^(-10);
+a5 = -2.539 * 10^(-16);
+a6 = 1.087 * 10^(-13);
+a7 = 1.036 * 10^(-11);
+a8 = 2.769 * 10^(-10);
+hf = 10^4;  %coeficiente de transfer√™ncia de calor convectivo W/(m¬≤K)
+lambdatub = 52;  %condutividades t√©rmicas de cada camada
+lambdaa = 0.023;
+lambdacas = 52;
+lambdaf = 7.2;
+lambdacem = 0.2;
+Te0 = 297; %temperatura de forma√ß√£o na posi√ß√£o inicial em rela√ß√£o ao eixo z
+Q = 0.4172; %taxa de massa de inje√ß√£o de √°gua, kg/s
+ro = 1030; %densidade da √°gua de inje√ß√£o
+cF = 34.46173; %concentra√ß√£o da salmoura, kg/m¬≥ !!!!!!!!!!!!!!!!!!!!!!!!!!!
+dp = 3.6*10^(-8); %di√¢metro m√©dio da part√≠cula, m
+rop = 2.93*10^3; %densidade da part√≠cula
+mi = 10^(-4); %viscosidade din√¢mica do fluido, Pa/s
+ni = 9.7*10^(-7); %viscosidade cinem√°tica, m¬≤/s 
+VV = 0.5; %V* = velocidade de fric√ß√£o, m/s
+Mtotal(1,1) = 0; %no tempo inicial, teremos que a massa total de escala √© zero. 
 
-rof = ;%densidade da camada de incrustaÁ„o. Elaa È vari·vel? (est· sendo 
-%considerado que a densidade ser· constante)
-xf(1) = 0; %profundidade inicial
-C = ;%constante de Lammers
-dcp = ;%diferenÁa de capacidade tÈrmica
-dHo = ;%entalpia da soluÁ„o
-R =  ;%constante dos gases molar
-E =  ;%energa de ativaÁ„o
-Kro =  ;%constante da reaÁ„o
-beta =  ;%constante de Mc1
-ttotal =  ;%instante final
-N =  ;%quantidade de subintervalos em relaÁ„o ao tempo
-h = ttotal/N;%valor do passo temporal
-t = 0:h:ttotal;%matriz dos instantes a partir do passo h
-Z = ; %profundidade m·xima
-deltaZ = ; %tamanho de cada segmento; subintervalos da profundidade
-Nz = Z/deltaZ; %n˙mero de subintervalos em relaÁ„o ao eixo z
-z = 0:deltaZ:Z; %discretizaÁ„o da profundidade
-G = 83*2*w^(0.54); % G = P/K; abordagem de Krause
-gama = ;%coeficiente de expans„o linear
-g = 9.81; %g È o valor da gravidade???
-lambdaF = ;
-d1 = ;  %camadas especÌficas do poÁo (de d0 a d5)
-d2 = ;
-d3 = ;
-d4 = ;
-d5 = ;
-a = 0.035; %gradiente geotÈrmico; tem como unidade K/m
-hf = ;  %coeficiente de transferÍncia de calor convectivo
-lambdatub = ;  %condutividades tÈrmicas de cada camada
-lambdaa = ;
-lambdacas = ;
-lambdaf = ;
-Te0 = ; %temperatura de formaÁ„o na posiÁ„o inicial em relaÁ„o ao eixo z
-Q = ; %taxa de massa de injeÁ„o de ·gua
-ro = ; %densidade da ·gua de injeÁ„o
-n = ; %viscosidade din‚mica
-cF = ;%concentraÁ„o da salmoura
-q = ;%calor transfertido por unidade de comprimento ao longo do poÁo
-dp = ; %di‚metro mÈdio da partÌcula
-rop = %densidade da partÌcula
-mi = ; %viscosidade din‚mica do fluido;
-v = ;%viscosidade cinem·tica
-c = %matriz de uma linha das concentraÁıes discretizadas
-f = size(c);
-T = %matriz de uma linha das temperaturas discretizadas
-b = size(T);
-VV = ; %V* = velocidade de fricÁ„o
 
 
-%%%C”DIGO%%%
+%%%C√ìDIGO%%%
 
-[ft] = tempo_sem_dimensoes(a,t,d5,N);% de acordo com K. Chiu. È calculada
-%previamente a fim de reduzir o tamanho do loop, o que È possÌvel, visto 
-%que È dependente apenas do tempo.
+%%%Ps: considerando-se que T = Tw e que Te = Tf, teremos que:
+%%% Tw = Rf*q - Te
 
-for i=1:(N+1)  %em relaÁ„o ao tempo!
-    xf(i+1) = xf(i) + Mt*(t/rof);  %VOLTAR PRA C¡!!!
-    d0(i) = d1 -2*xf(i); %di‚metro hidr·ulico do canal do fluxo
-   [k,Rf] = resistencias(d0(i),d1,d2,d3,d4,d5,d6,d7,lambdaF,hf,
-   lambdatub,lambdaa,lambdacas,lambdacem,a,lambdaf,ft,i);%a cada mudanÁa
-   %no tempo, as resistÍncias s„o modificadas. k È o coeficiente global
-   % de transferÍncia de calor.
-   w(i) = (4*Q)/(pi*ro*d0(i)); %velocidade mÈdia do fluxo de ·gua
-   Re(i) = (w(i)*d0*ro)/n; %n˙mero de Reynolds
-   ConCa(i) = ;%concentraÁ„o de Ca
-   ConCO3(i) = ;%concentraÁ„o de CO3  %como fazer com que variem no tempo???
-   Kspb(i) = ; %produto de solubilidade do sal carbonato de c·lcio
-   Sb(i) = (ConCa * ConCO3)/Kspb(i);  %como obter  Kspb?
-   Cp(i) = -16.647 + 1.667*Sb(i); %concentraÁ„o da partÌcula
-   [Mp] = massa_de_particula(dp,rop,VV,mi,v,Sc,Cp,i);
-   dT(i) = Rf(i)*q;
-   Mr(i)= G^(-1)*rof*(1 + gama* dT(i))*(dp*(ro^2*n*g)^(1/3))*xf(i)*(w(i)^2);
-   for j = 1:(Nz+1)  % em relaÁ„o ‡ profundidade!
-       Te(j) = Te0 + a*z(j);
-       dTdZ(i,j) = -(pi*d1*k(i)*(T(i)-Te(j))/(Cp(i)*Q); %PRA QU ?
-       %Com T = T(i) (t· certo isso?)
-     end
-end
-%[Mc] = massa_de_cristalizacao(beta,cF,cS,Kro,E,R,Tf,c,T,f,b,Re,Sc,d0) DAR
-%OLHADA NO C”DIGO!
-[Md] = massa_de_cristalizacao_2(c,f,T,b,w,ro,d0,n,Re,cF,dcp,dHo,C,Kro,E,R);
-
-%TEMOS O PROBLEMA DE QUE Mp E Mr DEPENDEM APENAS DO TEMPO, J¡ Md DEPENDE DO
-%TEMPO, DA CONCENTRA«√O E DA TEMPERATURA...E AGORA?
-
-%%%PARTE FINAL DO C”DIGO, DESCRITA NO INÕCIO DO ARTIGO%%%
-for i = 1:b %linhas de D(T,c)
-    for j =1:f   %colunas de D(T,c)
-        for k= 1:N   %tempo
-            Mtotal(i,j,k) = Md(i,j,k) - Mr(k); %taxa de massa por ·rea
-        end
-    end 
-end     
-M(1,1,1) = Mtotal(1,1,1);  %inicializando a matriz M, de Mt
-for i = 1:N   %linhas de D(T,c)
-   for j =1:f   %colunas de D(T,c)
-       for k= 1:N   %tempo
-           M(i,j,k+1) = M(i,j,k) + Mtotal(i,j,k)*h; %variaÁ„o da massa de
-           %cristal por ·rea de superfÌcie durante o tempo
+for i=1:(N+1)  %em rela√ß√£o ao tempo!
+       for j = 1:(Nz+1)  % em rela√ß√£o √† profundidade!      
+          %SLIDE 40:
+          xf(i) = Mtotal/rof; %espessura da camada de incrusta√ß√£o
+          d0 = d1 -2*xf(i); %di√¢metro hidr√°ulico do canal do fluxo; d0(i) = d0(i)
+          [ft] = tempo_sem_dimensoes(a,t,d5,i);% de acordo com K. Chiu. √© calculada
+          [K,Rf] = resistencias(d0,d1,d2,d3,d4,d5,lambdaf,hf,lambdatub,lambdaa,lambdacas,lambdacem,ft,i)
+          %a cada mudan√ßa no tempo, as resist√™ncias s√£o modificadas. K √© ocoeficiente global de transfer√™ncia de calor.
+          Te(j) = Te0 + a*z(j); % temperatura de forma√ß√£o
+          T(j) = Rf*q - Te(j); %Com T = Tw(temperatura da √°gua ao longo do po√ßo)!
+          dTdZ(i,j) = -(pi*d1*K*(T(j)-Te(j))/(Cp(i)*Q)); %Com T = T(i)
+          q = pi*d1*K*(T(j)-Te(j)); %calor transferido por unidade de comprimento ao longo do po√ßo
+          
+   
+          %SLIDE 41:
+          w = (4*Q)/(pi*ro*d0); %velocidade m√©dia do fluxo de √°gua; w = w(i)
+   
+          %SLIDE 42:
+          if  z ==1
+              ConCa(i,1) = 6990;%concentra√ß√£o de Ca, em mg/L
+              ConCO3(i,1) = 551;%concentra√ß√£o de CO3, em mg/L
+          else
+              ConCa(i,j) =ConCa(i,j-1)- Mc(i,j)*h*d0*deltaZ;%concentra√ß√£o de Ca
+              ConCO3(i,j) =ConCO3(i,j-1)- Mc(i,j)*h*d0*deltaZ;%concentra√ß√£o de CO3 
+          end
+          Kspb(i,j) =89; %produto de solubilidade do sal carbonato de c√°lcio, ele deve depender da profundidade e do instante?
+          Sb = (ConCa(i,j) * ConCO3(i,j))/Kspb(i,j);  %grau de supersatura√ß√£o da solu√ß√£o; Sb = Sb(i,j)
+          Cp = -16.647 + 1.667*Sb; %concentra√ß√£o da part√≠cula; Cp = Cp(i,j)
+          c(i,j) = 607; %concentra√ß√£o 
+         [D] = coeficiente_de_difusao(Te,a1,a2,a3,a4,a5,a6,a7,a8,c,i,j);
+          Sc = n/(ro*D); %n√∫mero de schmidt; Sc = Sc(i,j)
+         [Mp] = massa_de_particula(dp,rop,VV,mi,ni,Sc,Cp);
+   
+         %SLIDE 43:
+         Re = (w*d0*ro)/n; %n√∫mero de Reynolds; Re = Re(i)
+         Sh = 0.034*Re^(0.875)*Sc^(0.333); %n√∫mero de Sherwood; Sh = Sh(i,j)
+         beta = (Sh*D)/d0;%coeficiente de transfer√™ncia de massa; beta = beta(i,j)
+         Kr = Kro * exp(-E/(R*Te(j)) );  %taxa de rea√ß√£o superficial da superf√≠cie
+         cS = 10^(-dHo/(2.3*R*Te(j)) + (dcp/R)*log(Te(j)) + C); %invers√£o do logaritmo; dado a partir da temperatura Te(j) considerada; concentra√ß√£o de satura√ß√£o
+         dc = cF - cS;  %varia√ß√£o total de concentra√ß√£o entre a salmoura e a incrusta√ß√£o
+        [Mc] = massa_de_cristalizacao(beta,Kr,dc);
+          Md(i,j) = Mc + Mp;   %taxa de deposi√ß√£o
+   
+         %SLIDE 44:
+         G = 83.2*w^(0.54); % G = P/K; abordagem de Krause
+         dT = Rf*q;  %como obter q?
+        [Mr]= massa_de_remocao(G,rof,gama,dT,dp,ro,n,g,xf,w,i)
+   
+         %SLIDE 39:
+         Mtotal(i,j) = Md(i,j) - Mr(i); %taxa de massa por √°rea
+         Mtotal(1,j) = 0;
+         if i~=1
+             Mtotal(i,j) = Mtotal(i-1,j) + Mtotal(i-1,j)*h; %varia√ß√£o da massa de cristal por √°rea de superf√≠cie durante o tempo
+         end
        end
-   end
 end
 
+%Observa√ß√£o: devido √† equa√ß√£o de dP/dZ n√£o influenciar nas demais, ela n√£o
+%foi inserida no c√≥digo
+%%% GR√ÅFICOS %%%
+plot(xf(:),z(;))
 
 
-%%%E QUANTO AOS GR¡FICOSS???%%%
