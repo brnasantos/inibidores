@@ -1,0 +1,3 @@
+function[Mr} = massa_de_remocao(G,rof,gama,dT,dp,ro,n,g,xf,w,i)
+    Mr(i)= G^(-1)*rof*(1 + gama* dT)*(dp*(ro^2*n*g)^(1/3))*xf(i)*(w^2);
+end
