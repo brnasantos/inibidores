@@ -1,0 +1,7 @@
+function[Md] = massa_de_cristalizacao(beta,Kr,dc)
+
+    L = beta/Kr;%criando a constante L a fim de diminuir a equação de Mc
+    Mc = beta*(0.5*L + dc -(0.25*(L^2 + L*dc)^(0.5)); %taxa de cristalização
+end
+
+%FOI CONSIDERADO QUE O Tf É O Te(i)!!!!
